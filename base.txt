@@ -17,3 +17,4 @@ work работа .
 time время .
 water вода .
 day день .
+sorry извините .
