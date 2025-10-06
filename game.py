@@ -1,22 +1,52 @@
+from key import BOT_TOKEN
 import telebot
 from telebot import types
 import random
-from key import BOT_TOKEN
-import questions
 
-
-
-quiz_questions = questions.parse_questions_from_file('base.txt')
-
+BOT_TOKEN = BOT_TOKEN
 bot = telebot.TeleBot(BOT_TOKEN)
 
 # База вопросов и ответов
-# quiz_questions = quiz_questions
+quiz_questions = [
+    {
+        "question": "You",
+        "correct": "ты",
+        "hint": "."
+    },
+    {
+        "question": "he",
+        "correct": "он",
+        "hint": "."
+    },
+    {
+        "question": "she",
+        "correct": "она",
+        "hint": "."
+    },
+    {
+        "question": "it",
+        "correct": "оно",
+        "hint": "."
+    },
+    {
+        "question": "we",
+        "correct": "мы",
+        "hint": "."
+    },
+    {
+        "question": "they",
+        "correct": "они",
+        "hint": "."
+    },
+    {
+        "question": "to be",
+        "correct": "быть",
+        "hint": "."
+    }
+]
 
 # Словари для хранения состояния игры и статистики пользователей
-
 user_games = {}
-
 user_stats = {}
 
 
