@@ -1,4 +1,3 @@
-
 #
 # quiz_questions = [
 #     {
@@ -69,8 +68,8 @@ def parse_questions_from_file(filename):
                 # Первое слово - вопрос (английское слово)
                 question = parts[0]
 
-                # Второе слово - правильный ответ (русский перевод)
-                correct = parts[1]
+                # Разделяем варианты ответов по разделителю "/"
+                correct_answers = parts[1].split('/')
 
                 # Все остальное - подсказка (объединяем обратно)
                 hint = ' '.join(parts[2:])
@@ -78,7 +77,7 @@ def parse_questions_from_file(filename):
                 # Создаем словарь вопроса
                 question_dict = {
                     "question": question,
-                    "correct": correct,
+                    "correct": correct_answers,
                     "hint": hint
                 }
 
@@ -93,5 +92,3 @@ def parse_questions_from_file(filename):
     except Exception as e:
         print(f"❌ Ошибка при чтении файла: {e}")
         return []
-
-
