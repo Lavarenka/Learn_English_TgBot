@@ -346,6 +346,7 @@ def handle_game(message):
         else:
             bot.send_message(message.chat.id, "Сначала начни игру!", reply_markup=create_main_menu())
 
+
     elif message.text == '⏭️ Пропустить':
         if user_id in user_games and user_games[user_id]['in_game']:
             game_data = user_games[user_id]
