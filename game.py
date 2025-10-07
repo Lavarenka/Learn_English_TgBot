@@ -172,8 +172,8 @@ def send_question(user_id):
     question_text = f"❓ Вопрос {game_data['current_question'] + 1} из {game_data['questions_count']}:\n\n{question_data['question']}"
 
     # Показываем возможные варианты, если их несколько
-    if len(question_data['correct']) > 1:
-        question_text += f"\n\n💭 Возможные варианты: {', '.join(question_data['correct'])}"
+    # if len(question_data['correct']) > 1:
+    #     question_text += f"\n\n💭 Возможные варианты: {', '.join(question_data['correct'])}"
 
     if game_data['hint_used']:
         question_text += f"\n\n💡 Подсказка: {question_data['hint']}"

@@ -1,7 +1,7 @@
-You ты/вы .
-he он .
-she она .
-it оно/это .
-we мы .
-they они .
-to_be быть/являться .
+ты/вы | You  | You  
+он | He | He 
+она | She | She 
+оно/это |It | It
+мы | We | We 
+они | They | They 
+быть/являться | to be | to be

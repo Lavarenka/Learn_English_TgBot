@@ -20,8 +20,8 @@ def parse_questions_from_file(filename):
                     continue
 
                 # Разделяем строку на части
-                parts = line.split()
-
+                parts = line.split('|')
+                # print(parts)
                 # Проверяем, что в строке минимум 3 части: вопрос, ответ и подсказка
                 if len(parts) < 3:
                     print(f"⚠️ Предупреждение: строка {line_num} пропущена (недостаточно данных): {line}")
