@@ -4,17 +4,38 @@ import random
 from key import BOT_TOKEN
 import questions
 
-quiz_questions = questions.parse_questions_from_file('base.txt')
-
 bot = telebot.TeleBot(BOT_TOKEN)
 
-# Словари для хранения состояния игры и статистики пользователей
+# Уровни сложности
+DIFFICULTY_LEVELS = {
+    'beginner': {
+        'name': '🟢 Начальный',
+        'file': 'beginner.txt',
+        'description': 'Простые слова и базовые фразы'
+    },
+    'intermediate': {
+        'name': '🟡 Средний',
+        'file': 'intermediate.txt',
+        'description': 'Повседневная лексика и выражения'
+    },
+    'advanced': {
+        'name': '🔴 Продвинутый',
+        'file': 'advanced.txt',
+        'description': 'Сложные слова и идиомы'
+    },
+    'mixed': {
+        'name': '🌈 Смешанный',
+        'file': None,
+        'description': 'Слова из всех уровней сложности'
+    }
+}
+
+# Словари для хранения данных
 user_games = {}
 user_stats = {}
-user_settings = {}  # Для хранения настроек пользователя
+user_settings = {}
 
 
-# Функция для создания главного меню
 def create_main_menu():
     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     btn1 = types.KeyboardButton('🎮 Начать игру')
@@ -24,26 +45,29 @@ def create_main_menu():
     return markup
 
 
-# Функция для создания меню настроек
 def create_settings_menu():
     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    btn1 = types.KeyboardButton('🔢 Изменить количество вопросов')
-    btn2 = types.KeyboardButton('📝 Текущие настройки')
-    btn3 = types.KeyboardButton('⬅️ Назад')
-    markup.add(btn1, btn2, btn3)
+    btn1 = types.KeyboardButton('🔢 Количество вопросов')
+    btn2 = types.KeyboardButton('🎯 Уровень сложности')
+    btn3 = types.KeyboardButton('📝 Текущие настройки')
+    btn4 = types.KeyboardButton('⬅️ Назад')
+    markup.add(btn1, btn2, btn3, btn4)
     return markup
 
 
-# Функция для создания клавиатуры выбора количества вопросов
-def create_questions_count_menu():
-    markup = types.ReplyKeyboardMarkup(row_width=5, resize_keyboard=True)
-    buttons = []
-    # Создаем кнопки для выбора количества вопросов
-    counts = [5, 10, 15, 20, 25, 30, 40, 50]
-    for count in counts:
-        buttons.append(types.KeyboardButton(f'{count} вопросов'))
+def create_difficulty_menu():
+    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
+    for level_key, level_info in DIFFICULTY_LEVELS.items():
+        markup.add(types.KeyboardButton(level_info['name']))
+    markup.add(types.KeyboardButton('⬅️ Назад'))
+    return markup
 
-    # Разбиваем на строки по 4 кнопки
+
+def create_questions_count_menu():
+    markup = types.ReplyKeyboardMarkup(row_width=4, resize_keyboard=True)
+    counts = [5, 10, 15, 20, 25, 30, 40, 50]
+    buttons = [types.KeyboardButton(f'{count}') for count in counts]
+
     for i in range(0, len(buttons), 4):
         markup.add(*buttons[i:i + 4])
 
@@ -51,7 +75,6 @@ def create_questions_count_menu():
     return markup
 
 
-# Функция для создания клавиатуры во время игры
 def create_game_keyboard():
     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     btn1 = types.KeyboardButton('💡 Подсказка')
@@ -61,46 +84,92 @@ def create_game_keyboard():
     return markup
 
 
-# Функция для получения количества вопросов по умолчанию для пользователя
+def get_user_settings(user_id):
+    if user_id not in user_settings:
+        user_settings[user_id] = {
+            'questions_count': 10,
+            'difficulty': 'beginner'
+        }
+    return user_settings[user_id]
+
+
 def get_user_questions_count(user_id):
-    if user_id not in user_settings:
-        user_settings[user_id] = {'questions_count': 10}  # По умолчанию 10 вопросов
-    return user_settings[user_id]['questions_count']
+    return get_user_settings(user_id)['questions_count']
 
 
-# Функция для установки количества вопросов
+def get_user_difficulty(user_id):
+    return get_user_settings(user_id)['difficulty']
+
+
 def set_user_questions_count(user_id, count):
-    if user_id not in user_settings:
-        user_settings[user_id] = {}
     user_settings[user_id]['questions_count'] = count
 
 
-# Функция для начала новой игры
+def set_user_difficulty(user_id, difficulty):
+    user_settings[user_id]['difficulty'] = difficulty
+
+
+def load_questions_by_difficulty(difficulty):
+    level_info = DIFFICULTY_LEVELS.get(difficulty, DIFFICULTY_LEVELS['beginner'])
+
+    if difficulty == 'mixed':
+        all_questions = []
+        for level_key, level_data in DIFFICULTY_LEVELS.items():
+            if level_key != 'mixed' and level_data['file']:
+                try:
+                    questions_list = questions.parse_questions_from_file(level_data['file'])
+                    all_questions.extend(questions_list)
+                except:
+                    pass
+        return all_questions
+    else:
+        if level_info['file']:
+            try:
+                return questions.parse_questions_from_file(level_info['file'])
+            except:
+                pass
+
+    try:
+        return questions.parse_questions_from_file('base.txt')
+    except:
+        return []
+
+
 def start_new_game(user_id):
-    questions_count = get_user_questions_count(user_id)
-    available_questions = min(questions_count, len(quiz_questions))
+    settings = get_user_settings(user_id)
+    questions_count = settings['questions_count']
+    difficulty = settings['difficulty']
+
+    difficulty_questions = load_questions_by_difficulty(difficulty)
+
+    if not difficulty_questions:
+        return None, "❌ Для выбранного уровня сложности нет доступных вопросов"
+
+    available_questions = min(questions_count, len(difficulty_questions))
+
+    if available_questions < questions_count:
+        return None, f"❌ В базе только {len(difficulty_questions)} слов. Уменьшите количество вопросов."
+
+    selected_questions = random.sample(difficulty_questions, available_questions)
 
     user_games[user_id] = {
         'score': 0,
         'current_question': 0,
-        'questions': random.sample(quiz_questions, available_questions),
+        'questions_count': questions_count,
+        'questions': selected_questions,
         'in_game': True,
         'hint_used': False,
-        'questions_count': available_questions
+        'difficulty': difficulty
     }
-    return send_question(user_id)
+
+    return send_question(user_id), None
 
 
-# Функция для отправки вопроса
 def send_question(user_id):
     game_data = user_games[user_id]
     question_data = game_data['questions'][game_data['current_question']]
 
     question_text = f"❓ Вопрос {game_data['current_question'] + 1} из {game_data['questions_count']}:\n\n{question_data['question']}"
-
-    # Показываем возможные варианты, если их несколько
-    # if len(question_data['correct']) > 1:
-    #     question_text += f"\n\n💭 Возможные варианты: {', '.join(question_data['correct'])}"
 
     if game_data['hint_used']:
         question_text += f"\n\n💡 Подсказка: {question_data['hint']}"
@@ -108,28 +177,19 @@ def send_question(user_id):
     return question_text
 
 
-# Обновленная функция для проверки ответа с поддержкой множественных вариантов
 def check_answer(user_answer, correct_answers):
-    """
-    Проверяет ответ пользователя против списка правильных вариантов
-    """
     user_clean = user_answer.lower().strip()
 
     for correct in correct_answers:
         correct_clean = correct.lower().strip()
-
-        # Точное совпадение
         if user_clean == correct_clean:
             return True
-
-        # Частичное совпадение для текстовых ответов
         if correct_clean in user_clean or user_clean in correct_clean:
             return True
 
     return False
 
 
-# Функция для форматирования правильных ответов в красивый текст
 def format_correct_answers(correct_answers):
     if len(correct_answers) == 1:
         return correct_answers[0]
@@ -137,7 +197,6 @@ def format_correct_answers(correct_answers):
         return " или ".join(correct_answers)
 
 
-# Функция для обновления статистики
 def update_stats(user_id, score, total_questions):
     if user_id not in user_stats:
         user_stats[user_id] = {
@@ -156,109 +215,115 @@ def update_stats(user_id, score, total_questions):
         stats['best_score'] = score
 
 
-# Функция для получения статистики
 def get_stats_text(user_id):
     if user_id not in user_stats:
         return "📊 Вы еще не играли. Начните игру, чтобы увидеть статистику!"
 
     stats = user_stats[user_id]
-
     if stats['games_played'] == 0:
         return "📊 Вы еще не играли. Начните игру, чтобы увидеть статистику!"
 
     accuracy = (stats['total_correct'] / stats['total_questions']) * 100 if stats['total_questions'] > 0 else 0
     questions_count = get_user_questions_count(user_id)
+    difficulty = get_user_difficulty(user_id)
+    difficulty_name = DIFFICULTY_LEVELS.get(difficulty, {}).get('name', 'Неизвестно')
 
     stats_text = f"""📊 Ваша статистика:
 
 🎮 Сыграно игр: {stats['games_played']}
 ✅ Правильных ответов: {stats['total_correct']} из {stats['total_questions']}
 🎯 Точность: {accuracy:.1f}%
-🏆 Лучший результат: {stats['best_score']}/{questions_count} правильных ответов
-🔢 Текущее количество вопросов: {questions_count}"""
+🏆 Лучший результат: {stats['best_score']}/{questions_count}
+🎯 Текущий уровень: {difficulty_name}"""
 
     return stats_text
 
 
-# Функция для получения текста текущих настроек
 def get_settings_text(user_id):
-    questions_count = get_user_questions_count(user_id)
-    total_available = len(quiz_questions)
+    settings = get_user_settings(user_id)
+    questions_count = settings['questions_count']
+    difficulty = settings['difficulty']
+    difficulty_info = DIFFICULTY_LEVELS.get(difficulty, DIFFICULTY_LEVELS['beginner'])
+    current_questions = load_questions_by_difficulty(difficulty)
 
     settings_text = f"""⚙️ Текущие настройки:
 
-🔢 Количество вопросов в игре: {questions_count}
-📚 Доступно слов в базе: {total_available}
+🔢 Количество вопросов: {questions_count}
+🎯 Уровень сложности: {difficulty_info['name']}
+📝 Описание: {difficulty_info['description']}
+📚 Доступно слов: {len(current_questions)}
 
-💡 Максимальное количество вопросов: {min(50, total_available)}"""
+💡 Вопросы выбираются случайно без повторений"""
 
     return settings_text
 
 
-# Функция для завершения игры
 def finish_game(user_id, message_chat_id):
     if user_id in user_games:
         game_data = user_games[user_id]
         score = game_data['score']
         total = game_data['questions_count']
+        difficulty = game_data['difficulty']
+        difficulty_name = DIFFICULTY_LEVELS.get(difficulty, {}).get('name', 'Неизвестно')
 
-        # Сохраняем статистику только если игра была начата
         if game_data['current_question'] > 0:
             update_stats(user_id, score, total)
 
         if score == total:
-            result_text = f"🎊 Поздравляю! Ты ответил правильно на все {total} вопросов! Ты гений! 🌟"
-        elif score >= total * 0.8:
-            result_text = f"👍 Отличный результат! {score} из {total} правильных ответов!"
-        elif score >= total * 0.6:
-            result_text = f"👌 Хороший результат! {score} из {total} правильных ответов!"
-        elif score >= total * 0.4:
-            result_text = f"😊 Неплохо! {score} из {total} правильных ответов!"
+            result_text = f"🎊 Поздравляю! На уровне {difficulty_name} все {total} ответов верны! 🌟"
+        elif score >= total * 0.7:
+            result_text = f"👍 Отличный результат! {score} из {total} на уровне {difficulty_name}"
+        elif score >= total * 0.5:
+            result_text = f"👌 Хорошо! {score} из {total} на уровне {difficulty_name}"
         else:
-            result_text = f"📚 Есть куда расти! {score} из {total} правильных ответов. Попробуй еще раз!"
+            result_text = f"💪 Попробуй еще! {score} из {total} на уровне {difficulty_name}"
 
         bot.send_message(message_chat_id, result_text, reply_markup=create_main_menu())
         del user_games[user_id]
     else:
-        bot.send_message(message_chat_id, "👋 Игра завершена. Чтобы начать заново, нажми 'Начать игру'",
-                         reply_markup=create_main_menu())
+        bot.send_message(message_chat_id, "👋 Игра завершена", reply_markup=create_main_menu())
 
 
-# Обработчик команды /start
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    total_questions = len(quiz_questions)
-    user_questions_count = get_user_questions_count(message.from_user.id)
+    user_id = message.from_user.id
+    settings = get_user_settings(user_id)
+    difficulty_info = DIFFICULTY_LEVELS.get(settings['difficulty'], DIFFICULTY_LEVELS['beginner'])
+    current_questions = load_questions_by_difficulty(settings['difficulty'])
 
-    welcome_text = f"""🎯 Добро пожаловать в Викторину по английскому!
+    welcome_text = f"""🎯 Добро пожаловать в Английскую Викторину!
 
-В базе: {total_questions} слов
-Текущее количество вопросов в игре: {user_questions_count}
+Текущие настройки:
+🎯 Уровень: {difficulty_info['name']}
+🔢 Вопросов: {settings['questions_count']}
+📚 Доступно слов: {len(current_questions)}
 
-💡 Некоторые слова имеют несколько правильных переводов
-💡 Можно использовать подсказку для текущего вопроса
-⏭️ Можно пропустить вопрос
-❌ Можно завершить игру досрочно
+{difficulty_info['description']}
 
-Используй меню ниже для управления игрой! 🍀"""
+💡 Вопросы выбираются случайно без повторений!
+
+Используй меню ниже для начала игры! 🍀"""
+
     bot.send_message(message.chat.id, welcome_text, reply_markup=create_main_menu())
 
 
-# Обработчик команды /game
 @bot.message_handler(commands=['game'])
 def start_game_command(message):
     user_id = message.from_user.id
-    start_new_game(user_id)
-    question_text = send_question(user_id)
-    questions_count = get_user_questions_count(user_id)
+    question_text, error = start_new_game(user_id)
 
-    bot.send_message(message.chat.id,
-                     f"🎮 Игра началась! Всего вопросов: {questions_count}\nВводи перевод текстом:",
-                     reply_markup=create_game_keyboard())
-    bot.send_message(message.chat.id, question_text, reply_markup=create_game_keyboard())
+    if error:
+        bot.send_message(message.chat.id, error, reply_markup=create_main_menu())
+    else:
+        settings = get_user_settings(user_id)
+        difficulty_info = DIFFICULTY_LEVELS.get(settings['difficulty'], DIFFICULTY_LEVELS['beginner'])
+
+        bot.send_message(message.chat.id,
+                         f"🎮 Игра началась! Уровень: {difficulty_info['name']}\nВопросов: {settings['questions_count']}\n\nВводи перевод:",
+                         reply_markup=create_game_keyboard())
+        bot.send_message(message.chat.id, question_text, reply_markup=create_game_keyboard())
 
 
-# Обработчик команды /stats
 @bot.message_handler(commands=['stats'])
 def show_stats_command(message):
     user_id = message.from_user.id
@@ -266,7 +331,6 @@ def show_stats_command(message):
     bot.send_message(message.chat.id, stats_text, reply_markup=create_main_menu())
 
 
-# Обработчик команды /settings
 @bot.message_handler(commands=['settings'])
 def show_settings_command(message):
     user_id = message.from_user.id
@@ -274,20 +338,23 @@ def show_settings_command(message):
     bot.send_message(message.chat.id, settings_text, reply_markup=create_settings_menu())
 
 
-# Обработка нажатий кнопок меню
 @bot.message_handler(func=lambda message: True)
 def handle_game(message):
     user_id = message.from_user.id
 
     if message.text == '🎮 Начать игру':
-        start_new_game(user_id)
-        question_text = send_question(user_id)
-        questions_count = get_user_questions_count(user_id)
+        question_text, error = start_new_game(user_id)
 
-        bot.send_message(message.chat.id,
-                         f"🎮 Игра началась! Всего вопросов: {questions_count}\nВводи перевод текстом:",
-                         reply_markup=create_game_keyboard())
-        bot.send_message(message.chat.id, question_text, reply_markup=create_game_keyboard())
+        if error:
+            bot.send_message(message.chat.id, error, reply_markup=create_main_menu())
+        else:
+            settings = get_user_settings(user_id)
+            difficulty_info = DIFFICULTY_LEVELS.get(settings['difficulty'], DIFFICULTY_LEVELS['beginner'])
+
+            bot.send_message(message.chat.id,
+                             f"🎮 Игра началась! Уровень: {difficulty_info['name']}\nВопросов: {settings['questions_count']}\n\nВводи перевод:",
+                             reply_markup=create_game_keyboard())
+            bot.send_message(message.chat.id, question_text, reply_markup=create_game_keyboard())
 
     elif message.text == '📊 Моя статистика':
         stats_text = get_stats_text(user_id)
@@ -297,40 +364,50 @@ def handle_game(message):
         settings_text = get_settings_text(user_id)
         bot.send_message(message.chat.id, settings_text, reply_markup=create_settings_menu())
 
-    elif message.text == '🔢 Изменить количество вопросов':
-        total_available = len(quiz_questions)
+    elif message.text == '🔢 Количество вопросов':
+        total_available = len(load_questions_by_difficulty(get_user_difficulty(user_id)))
         max_questions = min(50, total_available)
-        text = f"🔢 Выбери количество вопросов для игры:\n\nДоступно слов в базе: {total_available}\nМаксимум: {max_questions} вопросов"
+        text = f"🔢 Выбери количество вопросов (5-{max_questions}):\n\nДоступно слов: {total_available}"
         bot.send_message(message.chat.id, text, reply_markup=create_questions_count_menu())
+
+    elif message.text == '🎯 Уровень сложности':
+        text = "🎯 Выбери уровень сложности:\n\n"
+        for level_key, level_info in DIFFICULTY_LEVELS.items():
+            questions_count = len(load_questions_by_difficulty(level_key))
+            text += f"{level_info['name']} - {level_info['description']} ({questions_count} слов)\n"
+        bot.send_message(message.chat.id, text, reply_markup=create_difficulty_menu())
 
     elif message.text == '📝 Текущие настройки':
         settings_text = get_settings_text(user_id)
         bot.send_message(message.chat.id, settings_text, reply_markup=create_settings_menu())
 
     elif message.text == '⬅️ Назад':
-        bot.send_message(message.chat.id, "Возвращаемся в главное меню:", reply_markup=create_main_menu())
+        bot.send_message(message.chat.id, "Главное меню:", reply_markup=create_main_menu())
 
-    elif message.text.endswith('вопросов') and message.text.split()[0].isdigit():
-        # Обработка выбора количества вопросов
-        try:
-            count = int(message.text.split()[0])
-            total_available = len(quiz_questions)
-            max_questions = min(50, total_available)
+    elif message.text.isdigit():
+        count = int(message.text)
+        total_available = len(load_questions_by_difficulty(get_user_difficulty(user_id)))
+        max_questions = min(50, total_available)
 
-            if count < 5:
-                bot.send_message(message.chat.id, "❌ Минимальное количество вопросов: 5",
-                                 reply_markup=create_questions_count_menu())
-            elif count > max_questions:
+        if count < 5:
+            bot.send_message(message.chat.id, "❌ Минимум 5 вопросов", reply_markup=create_questions_count_menu())
+        elif count > total_available:
+            bot.send_message(message.chat.id,
+                             f"❌ В базе только {total_available} слов\nМаксимум можно выбрать {total_available} вопросов",
+                             reply_markup=create_questions_count_menu())
+        else:
+            set_user_questions_count(user_id, count)
+            bot.send_message(message.chat.id, f"✅ Установлено: {count} вопросов", reply_markup=create_settings_menu())
+
+    elif message.text in [level['name'] for level in DIFFICULTY_LEVELS.values()]:
+        for level_key, level_info in DIFFICULTY_LEVELS.items():
+            if message.text == level_info['name']:
+                set_user_difficulty(user_id, level_key)
+                questions_list = load_questions_by_difficulty(level_key)
                 bot.send_message(message.chat.id,
-                                 f"❌ Максимальное количество вопросов: {max_questions}\nВ базе только {total_available} слов",
-                                 reply_markup=create_questions_count_menu())
-            else:
-                set_user_questions_count(user_id, count)
-                bot.send_message(message.chat.id, f"✅ Установлено количество вопросов: {count}",
+                                 f"✅ Установлен уровень: {level_info['name']}\n📚 Доступно слов: {len(questions_list)}",
                                  reply_markup=create_settings_menu())
-        except ValueError:
-            bot.send_message(message.chat.id, "❌ Ошибка при выборе количества вопросов",
-                             reply_markup=create_settings_menu())
+                break
 
     elif message.text == '💡 Подсказка':
         if user_id in user_games and user_games[user_id]['in_game']:
@@ -341,11 +418,9 @@ def handle_game(message):
                 hint_text = f"💡 Подсказка: {question_data['hint']}"
                 bot.send_message(message.chat.id, hint_text, reply_markup=create_game_keyboard())
             else:
-                bot.send_message(message.chat.id, "❌ Подсказка уже использована для этого вопроса!",
-                                 reply_markup=create_game_keyboard())
+                bot.send_message(message.chat.id, "❌ Подсказка уже использована!", reply_markup=create_game_keyboard())
         else:
             bot.send_message(message.chat.id, "Сначала начни игру!", reply_markup=create_main_menu())
-
 
     elif message.text == '⏭️ Пропустить':
         if user_id in user_games and user_games[user_id]['in_game']:
@@ -356,7 +431,6 @@ def handle_game(message):
             bot.send_message(message.chat.id, f"⏭️ Пропущено! Правильный ответ: {correct_text}",
                              reply_markup=create_game_keyboard())
 
-            # Переход к следующему вопросу
             game_data['current_question'] += 1
             game_data['hint_used'] = False
 
@@ -364,17 +438,14 @@ def handle_game(message):
                 question_text = send_question(user_id)
                 bot.send_message(message.chat.id, question_text, reply_markup=create_game_keyboard())
             else:
-                # Игра завершена естественным путем
                 finish_game(user_id, message.chat.id)
 
     elif message.text == '❌ Завершить игру':
         if user_id in user_games and user_games[user_id]['in_game']:
-            bot.send_message(message.chat.id, "🛑 Игра завершена досрочно",
-                             reply_markup=create_main_menu())
+            bot.send_message(message.chat.id, "🛑 Игра завершена", reply_markup=create_main_menu())
             finish_game(user_id, message.chat.id)
         else:
-            bot.send_message(message.chat.id, "👋 Нет активной игры. Чтобы начать, нажми 'Начать игру'",
-                             reply_markup=create_main_menu())
+            bot.send_message(message.chat.id, "Нет активной игры", reply_markup=create_main_menu())
 
     elif user_id in user_games and user_games[user_id]['in_game']:
         game_data = user_games[user_id]
@@ -395,14 +466,13 @@ def handle_game(message):
             question_text = send_question(user_id)
             bot.send_message(message.chat.id, question_text, reply_markup=create_game_keyboard())
         else:
-            # Игра завершена естественным путем
             finish_game(user_id, message.chat.id)
 
     else:
-        bot.send_message(message.chat.id, "Выбери действие из меню ниже:", reply_markup=create_main_menu())
+        bot.send_message(message.chat.id, "Выбери действие из меню:", reply_markup=create_main_menu())
 
 
-# Запускаем бота
 if __name__ == '__main__':
-    print(f"✅ Бот запущен! Доступно вопросов: {len(quiz_questions)}")
+    print("✅ Бот запущен с системой уровней сложности!")
+    print("💡 Вопросы выбираются случайно без повторений")
     bot.polling(none_stop=True)
