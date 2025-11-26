@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  english-bot:
+    build: .
+    container_name: english_quiz_bot
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+    # Если нужно использовать .env файл для токена:
+    env_file:
+      - .env

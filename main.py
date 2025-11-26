@@ -4,6 +4,52 @@ import random
 from key import BOT_TOKEN
 import questions
 
+import logging
+import sys
+import os
+
+
+def setup_logging():
+    # Создаем директорию логов если нет
+    log_dir = '/app/logs'
+    log_file = '/app/logs/bot.log'
+    
+    try:
+        # Пытаемся создать директорию и файл
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir, exist_ok=True)
+        
+        # Пробуем записать в файл
+        handlers = [logging.StreamHandler(sys.stdout)]
+        
+        try:
+            file_handler = logging.FileHandler(log_file, encoding='utf-8')
+            handlers.append(file_handler)
+            print(f"✅ File logging enabled: {log_file}")
+        except PermissionError as e:
+            print(f"⚠️ File logging disabled: {e}")
+            print("📝 Using console logging only")
+        
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            handlers=handlers
+        )
+        
+    except Exception as e:
+        # Фолбэк на базовую настройку
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(levelname)s - %(message)s',
+            handlers=[logging.StreamHandler(sys.stdout)]
+        )
+        print(f"⚠️ Using fallback logging: {e}")
+
+setup_logging()
+logger = logging.getLogger(__name__)
+
+
+
 bot = telebot.TeleBot(BOT_TOKEN)
 
 
@@ -289,11 +335,28 @@ def finish_game(user_id, message_chat_id):
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_id = message.from_user.id
+    # Получаем информацию о пользователе
+    user_first_name = message.from_user.first_name or "друг"
+    user_last_name = message.from_user.last_name or ""
+    username = message.from_user.username or ""
+    
+    # Формируем обращение
+    if user_first_name and user_last_name:
+        greeting = f"{user_first_name} {user_last_name}"
+    elif user_first_name:
+        greeting = user_first_name
+    elif username:
+        greeting = f"@{username}"
+    else:
+        greeting = "друг"
+    
+    logger.info(f"User {user_id} ({greeting}) started the bot")
+    
     settings = get_user_settings(user_id)
     difficulty_info = DIFFICULTY_LEVELS.get(settings['difficulty'], DIFFICULTY_LEVELS['beginner'])
     current_questions = load_questions_by_difficulty(settings['difficulty'])
 
-    welcome_text = f"""🎯 Добро пожаловать в Английскую Викторину!
+    welcome_text = f"""🎯 Привет, {greeting}! Добро пожаловать в Английскую Викторину! 🇬🇧
 
 Текущие настройки:
 🎯 Уровень: {difficulty_info['name']}
