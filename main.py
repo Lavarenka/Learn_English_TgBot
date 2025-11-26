@@ -6,6 +6,7 @@ import questions
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
+
 # Уровни сложности
 DIFFICULTY_LEVELS = {
     'beginner': {
