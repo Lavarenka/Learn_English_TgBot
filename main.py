@@ -36,6 +36,7 @@ user_stats = {}
 user_settings = {}
 
 
+
 def create_main_menu():
     markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     btn1 = types.KeyboardButton('🎮 Начать игру')
