@@ -180,15 +180,25 @@ def send_question(user_id):
 
 
 def check_answer(user_answer, correct_answers):
+    """
+    Проверяет ответ пользователя на точное совпадение
+    с одним из правильных вариантов
+    """
     user_clean = user_answer.lower().strip()
-
+    
+    # Очищаем от лишних пробелов
+    import re
+    user_clean = re.sub(r'\s+', ' ', user_clean)
+    
+    # Проверяем точное совпадение
     for correct in correct_answers:
         correct_clean = correct.lower().strip()
+        correct_clean = re.sub(r'\s+', ' ', correct_clean)
+        
+        # Сравниваем очищенные строки
         if user_clean == correct_clean:
             return True
-        if correct_clean in user_clean or user_clean in correct_clean:
-            return True
-
+    
     return False
 
 
