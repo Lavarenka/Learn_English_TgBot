@@ -9,6 +9,15 @@ import sys
 import os
 
 
+
+# Копируем обновленные файлы
+# docker cp beginner.txt english_quiz_bot:/app/beginner.txt
+# docker cp intermediate.txt english_quiz_bot:/app/intermediate.txt
+# docker cp advanced.txt english_quiz_bot:/app/advanced.txt
+
+# Перезапускаем бота
+# docker-compose restart
+
 def setup_logging():
     # Создаем директорию логов если нет
     log_dir = '/app/logs'
@@ -226,15 +235,25 @@ def send_question(user_id):
 
 
 def check_answer(user_answer, correct_answers):
+    """
+    Проверяет ответ пользователя на точное совпадение
+    с одним из правильных вариантов
+    """
     user_clean = user_answer.lower().strip()
-
+    
+    # Очищаем от лишних пробелов
+    import re
+    user_clean = re.sub(r'\s+', ' ', user_clean)
+    
+    # Проверяем точное совпадение
     for correct in correct_answers:
         correct_clean = correct.lower().strip()
+        correct_clean = re.sub(r'\s+', ' ', correct_clean)
+        
+        # Сравниваем очищенные строки
         if user_clean == correct_clean:
             return True
-        if correct_clean in user_clean or user_clean in correct_clean:
-            return True
-
+    
     return False
 
 

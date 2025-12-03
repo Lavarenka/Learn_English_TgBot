@@ -1,15 +1,17 @@
-ты/вы | You  | You  
-он | He | He 
-она | She | She 
-оно/это |It | It
-мы | We | We 
-они | They | They 
-быть/являться | to be | to be
-заниматься спортом | do sport | do sport
-другой/различный | different | different
-иногда | sometimes | sometimes
-водоросли | seaweeds | seaweeds
-куст | bush | bush
-расческа | hairbrush | hairbrush
-солома | straw | straw
-важный | important | important 
+Я | I   | I 
+Он | He | He 
+Она | She | She 
+Оно/Это |It | It
+Мы | We | We 
+Вы/Ты | You | You
+Они | They | They 
+Мне/Меня | Me | Me 
+Ему/Его | Him | Him
+Ей/Её | Her | Her 
+Нам/Нас | Us | Us 
+Мой/Моя/Моё | My | My
+Его | His | His 
+Наш/Наше/Наши | Our | Our
+Ваш/Твой | Your | Your 
+Их | Their | Their 
+
