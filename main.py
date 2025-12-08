@@ -3,6 +3,7 @@ from telebot import types
 import random
 from key import BOT_TOKEN
 import questions
+from levels import DIFFICULTY_LEVELS
 
 import logging
 import sys
@@ -63,28 +64,7 @@ bot = telebot.TeleBot(BOT_TOKEN)
 
 
 # Уровни сложности
-DIFFICULTY_LEVELS = {
-    'beginner': {
-        'name': '🟢 Начальный',
-        'file': 'beginner.txt',
-        'description': 'Простые слова и базовые фразы'
-    },
-    'intermediate': {
-        'name': '🟡 Средний',
-        'file': 'intermediate.txt',
-        'description': 'Повседневная лексика и выражения'
-    },
-    'advanced': {
-        'name': '🔴 Продвинутый',
-        'file': 'advanced.txt',
-        'description': 'Сложные слова и идиомы'
-    },
-    'mixed': {
-        'name': '🌈 Смешанный',
-        'file': None,
-        'description': 'Слова из всех уровней сложности'
-    }
-}
+DIFFICULTY_LEVELS = DIFFICULTY_LEVELS
 
 # Словари для хранения данных
 user_games = {}
