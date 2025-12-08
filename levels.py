@@ -5,10 +5,10 @@ DIFFICULTY_LEVELS = {
         'file': 'txt/beginner.txt',
         'description': 'Простые слова и базовые фразы'
     },
-    'beginner2': {
-        'name': '🟢 тест',
-        'file': 'txt/beginner2.txt',
-        'description': 'тест'
+    'weekend': {
+        'name': '🟢 Выходные',
+        'file': 'txt/weekend.txt',
+        'description': 'Выходные'
     },
     'intermediate': {
         'name': '🟡 Средний',
