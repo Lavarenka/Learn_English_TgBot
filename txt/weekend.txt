@@ -12,7 +12,7 @@
 Предпочитать | Prefer | Prefer
 Редко | Rarely | Rarely
 Приглашать | Invite | Invite
-Одежда |Clothes | Clothes
+Одежда | Clothes | Clothes
 Зарубежный | Foreign | Foreign
 Оба/То и ТО | Both | Both
 
