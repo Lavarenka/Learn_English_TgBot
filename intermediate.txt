@@ -1,15 +1,23 @@
-ты/вы | You  | You  
-он | He | He 
-она | She | She 
-оно/это |It | It
-мы | We | We 
-они | They | They 
-быть/являться | to be | to be
-заниматься спортом | do sport | do sport
-другой/различный | different | different
+Уставший | Tired  | Tired  
+Голодный | Hungry | Hungry 
+Энергичный/Бодрый | Energetic | Energetic
+То же самое + артикль | The same | The same
+Понедельник | Monday | Monday
+Вторник | Tuesday | Tuesday
+Среда | Wednesday | Wednesday
+Четверг | Thursday | Thursday
+Пятница | Friday | Friday
+Суббота | Saturday | Saturday
+Воскресенье | Sunday | Sunday
+Предпочитать | Prefer | Prefer
+Редко | Rarely | Rarely
+Приглашать | Invite | Invite
+Одежда | Clothes | Clothes
+Зарубежный | Foreign | Foreign
+Оба/То и ТО | Both | Both
+Часто | often | often
 иногда | sometimes | sometimes
-водоросли | seaweeds | seaweeds
-куст | bush | bush
-расческа | hairbrush | hairbrush
-солома | straw | straw
-важный | important | important 
+обычно | usually | usually
+бояться | afraid | afraid
+гордиться | proud | proud
+Никто | Nobody | Nobody 
