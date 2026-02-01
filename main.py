@@ -4,6 +4,7 @@ import random
 from key import BOT_TOKEN
 import questions
 
+
 bot = telebot.TeleBot(BOT_TOKEN)
 
 # Уровни сложности
