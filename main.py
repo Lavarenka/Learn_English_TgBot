@@ -12,17 +12,22 @@ bot = telebot.TeleBot(BOT_TOKEN)
 DIFFICULTY_LEVELS = {
     'beginner': {
         'name': '🟢 Начальный',
-        'file': 'beginner.txt',
+        'file': 'txt/beginner.txt',
         'description': 'Простые слова и базовые фразы'
+    },
+        'Rent a house': {
+        'name': '🟢 Rent a house',
+        'file': 'txt/rent_a_house.txt',
+        'description': 'Тема Rent a house'
     },
     'intermediate': {
         'name': '🟡 Средний',
-        'file': 'intermediate.txt',
+        'file': 'txt/intermediate.txt',
         'description': 'Повседневная лексика и выражения'
     },
     'advanced': {
         'name': '🔴 Продвинутый',
-        'file': 'advanced.txt',
+        'file': 'txt/advanced.txt',
         'description': 'Сложные слова и идиомы'
     },
     'mixed': {
