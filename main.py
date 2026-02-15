@@ -16,7 +16,7 @@ DIFFICULTY_LEVELS = {
         'description': 'Простые слова и базовые фразы'
     },
         'Rent a house': {
-        'name': '🟢 Rent a house',
+        'name': '🟢 6.Rent a house',
         'file': 'txt/rent_a_house.txt',
         'description': 'Тема Rent a house'
     },
