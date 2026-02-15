@@ -1,11 +1,3 @@
-ты/вы | You  | You  
-он | He | He 
-она | She | She 
-оно/это |It | It
-мы | We | We 
-они | They | They 
-быть/являться | to be | to be
-заниматься спортом | do sport | do sport
 другой/различный | different | different
 иногда | sometimes | sometimes
 водоросли | seaweeds | seaweeds
@@ -13,3 +5,19 @@
 расческа | hairbrush | hairbrush
 солома | straw | straw
 важный | important | important 
+пылесос | vacuum cleaner | vacuum cleaner
+духовка | oven | oven
+мультиварка | multicooker | multicooker
+посудомойка | dishwasher | dishwasher
+микроволновая печь | microwave | microwave
+бойлер | water heater | water heater
+стиральная машина | washing machine | washing machine
+утюг | iron | iron
+кофеварка | coffeemaker | coffeemaker
+электрическая лампочка | light bulb | light bulb 
+вентилятор | fan | fan
+фен | hair dryer | hair dryer
+провод | wire | wire
+электрический чайник | electric kettle | electric kettle
+холодильник | fridge | fridge
+выключатель | switch | switch
