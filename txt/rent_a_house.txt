@@ -1,23 +1,40 @@
-Уставший | Tired  | Tired  
-Голодный | Hungry | Hungry 
-Энергичный/Бодрый | Energetic | Energetic
-То же самое + артикль | The same | The same
-Понедельник | Monday | Monday
-Вторник | Tuesday | Tuesday
-Среда | Wednesday | Wednesday
-Четверг | Thursday | Thursday
-Пятница | Friday | Friday
-Суббота | Saturday | Saturday
-Воскресенье | Sunday | Sunday
-Предпочитать | Prefer | Prefer
-Редко | Rarely | Rarely
-Приглашать | Invite | Invite
-Одежда | Clothes | Clothes
-Зарубежный | Foreign | Foreign
-Оба/То и ТО | Both | Both
-Часто | often | often
-иногда | sometimes | sometimes
-обычно | usually | usually
-бояться | afraid | afraid
-гордиться | proud | proud
-Никто | Nobody | Nobody 
+агент по продаже недвижимости | a realtor  | a realtor  
+объявление о сдаче в аренду | a rental listing | a rental listing
+бытовые удобства | amenities | amenities
+арендатор | a tenant | a tenant
+заселяться; въезжать | to move in | to move in
+домовладелец, сдающий квартиру; хозяин квартиры | a landlord / a landlady | a landlord / a landlady
+сдавать в аренду | to let / rent out to smb | to let / rent out to smb
+коммунальные услуги | utilities | utilities
+договор об аренде | a lease | a lease
+сдавать в аренду | to sublet | to sublet
+выезжать; переезжать | to move out | to move out
+договор аренды квартиры | a rental application packet | a rental application packet
+сдаваемый в аренду | a rental | a rental
+брать в аренду / сдавать в аренду | to rent | to rent
+подписывать договор об аренде | sign ‎the lease | sign (‎the lease)
+рекомендации | references | references
+повторять материал | revise  | revise 
+внутрь | inside  | inside 
+положить  | Put  | Put 
+моющее средство  | Detergent | Detergent
+столовые приборы | Cutlery  | Cutlery 
+сначала  | First | First
+после истечения времени | After the time finishes | After the time finishes
+разморозить | Defrost  | Defrost 
+подключить это | Plug it in  | Plug it in 
+Отключить это | Unplug it| | Unplug it|
+вытащить  | Take out  |  Take out 
+крышка | Lid  | Lid 
+налить| Pour | Pour 
+объявление/реклама | Advertisement  | Advertisement  
+много | Many/ much  | Many/ much 
+когда | When  | When 
+затем | Then  | Then 
+приятного аппетита  | Enjoy your meal | Enjoy your meal
+приём пищи или еда | Meal  | Meal 
+хотеть | Want to | Want to
+нуждаться  | Need to  | Need to 
+мочь делать, уметь делать | Can do  | Can do 
+владеть | Own  | Own 
+взамен на  | In return for  | In return for 
