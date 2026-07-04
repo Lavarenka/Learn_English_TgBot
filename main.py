@@ -30,6 +30,21 @@ DIFFICULTY_LEVELS = {
         'file': 'txt/advanced.txt',
         'description': 'Сложные слова и идиомы'
     },
+    'irregular verbs': {
+        'name': '🔴 Неправильные глаголы',
+        'file': 'txt/irregular-verbs.txt',
+        'description': 'Сложные слова и идиомы'
+    },
+    'irregular verbs2': {
+        'name': '🔴 Неправильные глаголы2',
+        'file': 'txt/irregular-verbs2.txt',
+        'description': 'Сложные слова и идиомы'
+    },
+    'irregular verbs3': {
+        'name': '🔴 Неправильные глаголы3',
+        'file': 'txt/irregular-verbs3.txt',
+        'description': 'Сложные слова и идиомы'
+    },
     'mixed': {
         'name': '🌈 Смешанный',
         'file': None,
@@ -96,7 +111,7 @@ def get_user_settings(user_id):
     if user_id not in user_settings:
         user_settings[user_id] = {
             'questions_count': 10,
-            'difficulty': 'beginner'
+            'difficulty': 'irregular verbs'
         }
     return user_settings[user_id]
 
@@ -470,8 +485,11 @@ def handle_game(message):
         current_question = game_data['questions'][game_data['current_question']]
 
         if check_answer(message.text, current_question['correct']):
+           
+            correct_text = format_correct_answers(current_question['correct'])
+            
             game_data['score'] += 1
-            bot.send_message(message.chat.id, "✅ Правильно! 🎉", reply_markup=create_game_keyboard())
+            bot.send_message(message.chat.id, f"✅ Правильно! {correct_text} 🎉", reply_markup=create_game_keyboard())
         else:
             correct_text = format_correct_answers(current_question['correct'])
             bot.send_message(message.chat.id, f"❌ Неправильно! Правильный ответ: {correct_text}",
