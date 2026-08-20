@@ -4,20 +4,24 @@ FastAPI-приложение для управления уровнями и в�
 Запуск (из корня проекта):
     uvicorn app.api:app --reload
 
-После запуска доступны два интерфейса:
-  - http://127.0.0.1:8000/admin — удобная веб-админка (SQLAdmin): таблицы,
-    формы добавления/редактирования, поиск. Рекомендуется для повседневной
-    работы с уровнями и вопросами.
-  - http://127.0.0.1:8000/docs — интерактивная документация API (Swagger),
-    там же есть отдельный эндпоинт для вставки текста с вопросами одним
-    куском (bulk), как раньше вписывали в блокнот.
+После запуска доступны три интерфейса:
+  - http://127.0.0.1:8000/manage — "блокнотный" редактор: открываешь
+    уровень и видишь/правишь ВЕСЬ его список слов одним текстом, как
+    раньше в .txt файле. Рекомендуется для повседневного массового
+    добавления/правки слов.
+  - http://127.0.0.1:8000/admin — обычная веб-админка (SQLAdmin): таблицы,
+    формы, поиск. Удобна для точечного редактирования одной записи или
+    удаления уровня целиком.
+  - http://127.0.0.1:8000/docs — интерактивная документация API (Swagger).
 """
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from app.database import Base, engine, get_db
 from app import crud, schemas
 from app.admin import setup_admin
+from app.manage import router as manage_router
 
 # Создаём таблицы при первом запуске, если их ещё нет.
 Base.metadata.create_all(bind=engine)
@@ -29,6 +33,7 @@ app = FastAPI(
 )
 
 setup_admin(app, engine)
+app.include_router(manage_router)
 
 
 def _level_out(level, db: Session) -> schemas.LevelOut:
@@ -131,8 +136,4 @@ def delete_question(question_id: int, db: Session = Depends(get_db)):
 
 @app.get("/", tags=["meta"])
 def root():
-    return {
-        "message": "Learn English Bot Admin API",
-        "admin": "/admin — удобная веб-админка для уровней и вопросов",
-        "docs": "/docs — интерактивная документация API, там же bulk-добавление вопросов текстом",
-    }
+    return RedirectResponse("/manage/")

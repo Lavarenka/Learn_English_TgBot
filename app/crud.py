@@ -82,6 +82,16 @@ def delete_question(db: Session, question: Question) -> None:
     db.commit()
 
 
+def questions_to_text(db: Session, level_id: int) -> str:
+    """
+    Обратное превращение вопросов уровня в текст формата блокнота —
+    для показа в textarea редактора уровня.
+    """
+    questions = get_questions(db, level_id)
+    lines = [f"{q.question} | {q.correct} | {q.hint}" for q in questions]
+    return "\n".join(lines)
+
+
 def bulk_add_questions_from_text(
     db: Session, level_id: int, text: str, replace_existing: bool = False
 ) -> tuple[int, list[str]]:

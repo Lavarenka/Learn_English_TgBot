@@ -1,6 +1,7 @@
 /.idea/
 /key.py
 /english_bot.db
+/.secret_key
 __pycache__/
 *.pyc
 .venv/
