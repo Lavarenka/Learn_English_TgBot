@@ -19,12 +19,13 @@ import bcrypt
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from sqlalchemy.orm import Session
 
+from app.config import PROJECT_ROOT  # заодно подхватывает .env через load_dotenv()
 from app.models import AdminUser
 
 SESSION_COOKIE_NAME = "admin_session"
 SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 14  # 14 дней
 
-_SECRET_KEY_FILE = Path(__file__).resolve().parent.parent / ".secret_key"
+_SECRET_KEY_FILE = PROJECT_ROOT / ".secret_key"
 
 
 def _load_or_create_secret_key() -> str:

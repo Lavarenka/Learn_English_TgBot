@@ -18,7 +18,7 @@ import re
 import telebot
 from telebot import types
 
-from key import BOT_TOKEN
+from app.config import BOT_TOKEN
 from app.database import SessionLocal, Base, engine
 from app import crud
 

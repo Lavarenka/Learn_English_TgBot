@@ -2,6 +2,7 @@
 /key.py
 /english_bot.db
 /.secret_key
+/.env
 __pycache__/
 *.pyc
 .venv/

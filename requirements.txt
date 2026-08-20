@@ -7,3 +7,4 @@ sqladmin==0.20.1
 itsdangerous==2.2.0
 python-multipart==0.0.20
 bcrypt==4.2.1
+python-dotenv==1.0.1
