@@ -1,2 +1,6 @@
 /.idea/
 /key.py
+/english_bot.db
+__pycache__/
+*.pyc
+.venv/
