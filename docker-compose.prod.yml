@@ -1,0 +1,80 @@
+# Продакшен-каркас: PostgreSQL + Admin API + бот + nginx (reverse-proxy).
+#
+# Отличия от docker-compose.yml (локальная разработка):
+#   - код НЕ монтируется томом — образ самодостаточен, что в нём собрано,
+#     то и работает (никаких "а у меня локально по-другому")
+#   - uvicorn без --reload (не нужен, когда код не меняется на лету)
+#   - порт PostgreSQL НЕ пробрасывается наружу — база доступна только
+#     другим контейнерам внутри docker-сети, не всему интернету
+#   - добавлен nginx как reverse-proxy на порту 80 — сюда позже
+#     подключается SSL-сертификат (Let's Encrypt/certbot), см. README
+#     Docker-раздел про следующий шаг с доменом и HTTPS
+#
+# Запуск на сервере (Linux):
+#     docker compose -f docker-compose.prod.yml up --build -d
+#
+# .env на сервере должен содержать боевые значения — сгенерируй новый
+# SECRET_KEY и НЕ используй пароль от БД "по умолчанию" из примера.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    command: python run_api.py
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      BOT_TOKEN: ${BOT_TOKEN}
+      SECRET_KEY: ${SECRET_KEY}
+      HOST: 0.0.0.0
+      PORT: 8000
+      UVICORN_RELOAD: "false"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  bot:
+    build: .
+    command: python run_bot.py
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      BOT_TOKEN: ${BOT_TOKEN}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      # 443 добавится, когда подключим настоящий SSL-сертификат —
+      # см. README, раздел "Следующий шаг: домен и HTTPS".
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

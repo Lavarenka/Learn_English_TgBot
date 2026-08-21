@@ -2,19 +2,24 @@
 
 Telegram-бот-викторина для изучения английского (`@fastapiwb_bot`).
 
-Вопросы и уровни сложности хранятся в базе данных (SQLite), а не в `.txt`
+Вопросы и уровни сложности хранятся в базе данных, а не в `.txt`
 файлах, как раньше. Управлять ими можно через веб-интерфейс, защищённый
 логином и паролем.
+
+Есть два способа запуска: **без Docker** (Python + venv, база — файл
+SQLite, см. ниже) и **через Docker** (см. раздел "Docker" в конце —
+там же PostgreSQL и продакшен-вариант с nginx).
 
 ## Стек
 
 - **FastAPI** — Admin API + веб-страницы управления
 - **SQLAdmin** — веб-админка поверх БД (таблицы, формы, поиск)
 - **SQLAlchemy** — работа с базой данных
-- **SQLite** — сама база (файл `english_bot.db`, создаётся автоматически)
+- **SQLite** (без Docker) / **PostgreSQL** (в Docker) — база данных
 - **pyTelegramBotAPI (telebot)** — сам телеграм-бот, режим polling
 - **bcrypt** — хэширование паролей аккаунтов админки
 - **python-dotenv** — секреты (токен, ключ сессий) из `.env`, не из кода
+- **Docker + docker-compose** — контейнеризация (опционально, см. ниже)
 
 ## Установка (Windows, PowerShell)
 
@@ -202,3 +207,90 @@ bcrypt-хэша, никогда открытым текстом.
 посторонние. Если токен всё же где-то засветился — можно бесплатно
 перевыпустить его через [@BotFather](https://t.me/BotFather) командой
 `/mybots` → выбрать бота → `API Token` → `Revoke current token`.
+
+## Docker
+
+Два варианта: **локальная разработка** (`docker-compose.yml`) и
+**продакшен-каркас** (`docker-compose.prod.yml`). Оба используют
+PostgreSQL вместо SQLite — так поведение локально и на сервере
+одинаковое, без сюрпризов при переезде.
+
+### Установка Docker Desktop (Windows)
+
+Если ещё не установлен:
+
+1. Скачай с [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/).
+2. Установи и перезапусти компьютер, если попросит.
+3. При первом запуске Docker Desktop спросит про WSL 2 — соглашайся,
+   это стандартный и самый быстрый способ запускать Linux-контейнеры на
+   Windows. Если WSL 2 не установлена, Docker Desktop сам подскажет
+   команду для установки (`wsl --install`) — выполни её в PowerShell от
+   администратора, перезагрузись и открой Docker Desktop снова.
+4. Дождись, пока иконка Docker в трее станет "зелёной" (Engine running).
+5. Проверь в PowerShell:
+   ```powershell
+   docker --version
+   docker compose version
+   ```
+
+### Локальный запуск через Docker
+
+1. Скопируй `.env.example` в `.env` (если ещё не делал) и впиши
+   `BOT_TOKEN`. Значения `POSTGRES_*` можно оставить по умолчанию —
+   для локальной разработки они не критичны.
+2. Из корня проекта:
+   ```powershell
+   docker compose up --build
+   ```
+3. Подожди, пока соберётся образ и поднимутся все три контейнера
+   (`db`, `api`, `bot`) — в логе появится `Application startup complete`
+   и `Бот запущен...`.
+4. Открой `http://localhost:8000/manage` — так же, как при запуске без
+   Docker, только теперь всё работает в контейнерах, а данные хранятся
+   в PostgreSQL.
+5. Если это первый запуск — база пустая, нужно один раз выполнить
+   миграцию старых слов и создать аккаунт админки **внутри контейнера
+   api**:
+   ```powershell
+   docker compose exec api python scripts/seed_from_txt.py
+   docker compose exec api python scripts/create_admin.py
+   ```
+6. Остановить всё: `Ctrl+C`, затем `docker compose down` (данные в
+   PostgreSQL остаются — они лежат в отдельном Docker volume `pgdata` и
+   переживают остановку контейнеров; `docker compose down -v` удалит и
+   их тоже, если понадобится начать с чистого листа).
+
+Правки в коде на хосте (в VS Code) подхватываются автоматически —
+код примонтирован в контейнер, `uvicorn --reload` перезапускает Admin
+API сам. Для бота автоперезапуска нет (Telegram-библиотека этого не
+поддерживает) — после правок в `bot/`: `docker compose restart bot`.
+
+### Продакшен-каркас
+
+`docker-compose.prod.yml` — то же самое, но:
+- код НЕ примонтирован (образ самодостаточен — что собрано, то и
+  работает, никакой рассинхронизации с хостом);
+- PostgreSQL не пробрасывает порт наружу (доступна только другим
+  контейнерам, не всему интернету);
+- добавлен **nginx** как reverse-proxy на 80 порту (`nginx/nginx.conf`).
+
+Это ещё **не готовый к использованию продакшен** — сначала нужен
+реальный сервер (VPS) и домен. Запуск на сервере:
+
+```bash
+# .env на сервере ОБЯЗАН содержать свои значения — не используй
+# пароль "english_bot" из примера, сгенерируй боевой SECRET_KEY:
+python3 -c "import secrets; print(secrets.token_hex(32))"
+
+docker compose -f docker-compose.prod.yml up --build -d
+docker compose -f docker-compose.prod.yml exec api python scripts/seed_from_txt.py
+docker compose -f docker-compose.prod.yml exec api python scripts/create_admin.py
+```
+
+### Следующий шаг: домен и HTTPS
+
+Сейчас `nginx/nginx.conf` — просто reverse-proxy без сертификата.
+Когда будет реальный сервер с доменом, туда добавляется блок для
+Let's Encrypt (`certbot`) и редирект с 80 на 443 — это отдельный шаг,
+не хочешь ли заняться им — просто скажи, когда дойдёт до реального
+сервера.

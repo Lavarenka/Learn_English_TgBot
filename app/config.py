@@ -27,6 +27,13 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(PROJECT_ROOT / ".env")
 
 
+# Адрес базы данных. По умолчанию — локальный файл SQLite рядом с
+# проектом (для запуска без Docker, как раньше). В Docker
+# (docker-compose.yml и docker-compose.prod.yml) сюда подставляется
+# адрес PostgreSQL-контейнера.
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./english_bot.db")
+
+
 def _get_bot_token() -> str:
     token = os.environ.get("BOT_TOKEN")
     if token:

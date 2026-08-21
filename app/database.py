@@ -1,19 +1,29 @@
 """
 Настройка подключения к базе данных (SQLAlchemy).
 
-Используется локальный файл SQLite (english_bot.db), который лежит рядом
-с проектом — никакого отдельного сервера БД устанавливать не нужно.
+Адрес базы берётся из переменной окружения DATABASE_URL (см. .env /
+app/config.py). Если она не задана — используется локальный файл SQLite
+(english_bot.db) рядом с проектом, как раньше: для обычного локального
+запуска без Docker не нужно поднимать отдельный сервер БД.
+
+В Docker (и локальном docker-compose.yml, и продакшен-варианте)
+DATABASE_URL указывает на PostgreSQL — например:
+    postgresql+psycopg://user:password@db:5432/english_bot
 """
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "sqlite:///./english_bot.db"
+from app.config import DATABASE_URL
 
-# check_same_thread=False нужен, потому что и FastAPI, и телеграм-бот
-# могут обращаться к SQLite из разных потоков.
-engine = create_engine(
-    DATABASE_URL, connect_args={"check_same_thread": False}
-)
+_connect_args = {}
+if DATABASE_URL.startswith("sqlite"):
+    # check_same_thread=False нужен только для SQLite, потому что и
+    # FastAPI, и телеграм-бот могут обращаться к БД из разных потоков.
+    # PostgreSQL это ограничение не имеет — там за это отвечает пул
+    # соединений SQLAlchemy.
+    _connect_args = {"check_same_thread": False}
+
+engine = create_engine(DATABASE_URL, connect_args=_connect_args)
 
 
 # expire_on_commit=False важен для бота: объекты Question, отобранные для

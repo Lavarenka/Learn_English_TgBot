@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+.idea/
+.env
+.secret_key
+english_bot.db
+*.md
+Dockerfile
+docker-compose*.yml
+.dockerignore

@@ -1,0 +1,66 @@
+# Локальная разработка: PostgreSQL + Admin API + бот, всё в Docker.
+#
+# Запуск (из корня проекта, Windows/PowerShell — команда та же):
+#     docker compose up --build
+#
+# Admin API и /manage будут на http://localhost:8000
+# Код проекта смонтирован внутрь контейнера (volume) — правишь файлы у
+# себя в VS Code, uvicorn --reload сам подхватывает изменения без
+# пересборки образа.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-english_bot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-english_bot}
+      POSTGRES_DB: ${POSTGRES_DB:-english_bot}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      # Проброшено наружу для удобства — можно подключиться local'ным
+      # DBeaver/pgAdmin к localhost:5432 и посмотреть на данные глазами.
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-english_bot}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    command: python run_api.py
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-english_bot}:${POSTGRES_PASSWORD:-english_bot}@db:5432/${POSTGRES_DB:-english_bot}
+      BOT_TOKEN: ${BOT_TOKEN}
+      SECRET_KEY: ${SECRET_KEY:-}
+      HOST: 0.0.0.0
+      PORT: 8000
+      UVICORN_RELOAD: "true"
+    ports:
+      - "8000:8000"
+    volumes:
+      # Монтируем исходники внутрь контейнера — правки в коде на хосте
+      # сразу видны внутри контейнера, и uvicorn --reload перезапускается.
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+  bot:
+    build: .
+    command: python run_bot.py
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-english_bot}:${POSTGRES_PASSWORD:-english_bot}@db:5432/${POSTGRES_DB:-english_bot}
+      BOT_TOKEN: ${BOT_TOKEN}
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
